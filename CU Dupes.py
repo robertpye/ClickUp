@@ -64,7 +64,7 @@ def main():
             time.sleep(65)
             api_calls = 0
 
-    print(f"Total number of duplicate tasks: {len(duplicate_tasks)}")
+    print(f"Total number of duplicate TASKS: {len(duplicate_tasks)}")
 
 
 if __name__ == "__main__":
