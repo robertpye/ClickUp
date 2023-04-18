@@ -1,6 +1,6 @@
 import requests
 import time
-from secrets import api_key, team_id, list_id1, list_id2
+from secrets import api_key, team_id, list_id1, list_id2, list_id3
 
 headers = {"Authorization": api_key}
 
@@ -11,7 +11,7 @@ def get_all_tasks():
     while True:
         url = f"https://api.clickup.com/api/v2/team/{team_id}/task"
         params = {
-            "list_ids[]": [list_id1, list_id2],
+            "list_ids[]": [list_id1, list_id2, list_id3],
             "page": page
         }
         response = requests.get(url, headers=headers, params=params)
@@ -22,6 +22,7 @@ def get_all_tasks():
         all_tasks.extend(tasks)
         page += 1
     return all_tasks
+
 
 
 def find_duplicate_tasks(tasks):
