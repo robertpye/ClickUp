@@ -1,20 +1,9 @@
 import requests
 import time
-from secrets import api_key, team_id, list_id
+from secrets import api_key, team_id, list_id1, list_id2
 
-headers = {
-    "Authorization": api_key,
-    "Content-Type": "application/json"
-}
+headers = {"Authorization": api_key}
 
-api_calls = 0
-
-def pause_if_needed():
-    global api_calls
-    if api_calls >= 98:
-        print("Pausing due to max API calls.")
-        time.sleep(65)
-        api_calls = 0
 
 def get_all_tasks():
     all_tasks = []
@@ -22,7 +11,7 @@ def get_all_tasks():
     while True:
         url = f"https://api.clickup.com/api/v2/team/{team_id}/task"
         params = {
-            "list_ids[]": list_id,
+            "list_ids[]": [list_id1, list_id2],
             "page": page
         }
         response = requests.get(url, headers=headers, params=params)
@@ -35,30 +24,43 @@ def get_all_tasks():
     return all_tasks
 
 
-def add_tag_to_task(task_id, tag_name):
-    global api_calls
-    url = f"https://api.clickup.com/api/v2/task/{task_id}/tag/{tag_name}"
-    response = requests.post(url, headers=headers)
-    response.raise_for_status()
-    api_calls += 1
-    pause_if_needed()
-
-def find_and_tag_duplicate_tasks(tasks):
-    task_names = {}
+def find_duplicate_tasks(tasks):
+    task_names = set()
     duplicate_tasks = []
+
     for task in tasks:
-        task_name = task["name"]
+        task_name = task["name"].strip().lower()
         if task_name in task_names:
-            duplicate_task_id = task["id"]
-            print(f"Found duplicate: Task ID - {duplicate_task_id}, Task name - {task_name}")
-            add_tag_to_task(duplicate_task_id, "possible_duplicate")
-            duplicate_tasks.append(duplicate_task_id)
+            duplicate_tasks.append(task)
         else:
-            task_names[task_name] = task["id"]
+            task_names.add(task_name)
+
     return duplicate_tasks
 
-tasks = get_all_tasks()
-print(f"Total number of tasks: {len(tasks)}")
 
-duplicate_tasks = find_and_tag_duplicate_tasks(tasks)
-print(f"Total number of duplicate tasks: {len(duplicate_tasks)}")
+def add_possible_duplicate_tag(task_id):
+    url = f"https://api.clickup.com/api/v2/task/{task_id}/tag/possible_duplicate"
+    response = requests.post(url, headers=headers)
+    response.raise_for_status()
+
+
+def main():
+    tasks = get_all_tasks()
+    print(f"Total number of tasks: {len(tasks)}")
+
+    duplicate_tasks = find_duplicate_tasks(tasks)
+    api_calls = 0
+    for idx, duplicate in enumerate(duplicate_tasks):
+        print(f"Found duplicate: Task ID - {duplicate['id']}, Task name - {duplicate['name']}")
+        add_possible_duplicate_tag(duplicate['id'])
+        api_calls += 1
+        if api_calls >= 98:
+            print("Pausing due to max API calls...")
+            time.sleep(65)
+            api_calls = 0
+
+    print(f"Total number of duplicate tasks: {len(duplicate_tasks)}")
+
+
+if __name__ == "__main__":
+    main()
