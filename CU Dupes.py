@@ -60,7 +60,7 @@ def main():
         add_possible_duplicate_tag(duplicate['id'])
         api_calls += 1
         if api_calls >= 98:
-            print("Pausing due to max API calls...")
+            print("Pausing due to max number of API calls...")
             time.sleep(65)
             api_calls = 0
 
