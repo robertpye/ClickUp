@@ -25,15 +25,19 @@ def get_all_tasks():
 
 
 def find_duplicate_tasks(tasks):
-    task_names = set()
+    task_names = {}
     duplicate_tasks = []
 
     for task in tasks:
         task_name = task["name"].strip().lower()
         if task_name in task_names:
-            duplicate_tasks.append(task)
+            task_names[task_name].append(task)
         else:
-            task_names.add(task_name)
+            task_names[task_name] = [task]
+
+    for task_name in task_names:
+        if len(task_names[task_name]) > 1:
+            duplicate_tasks.extend(task_names[task_name])
 
     return duplicate_tasks
 
